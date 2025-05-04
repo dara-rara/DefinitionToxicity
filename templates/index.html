@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анализатор токсичности</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 2rem;
+        }
+        .container {
+            max-width: 800px;
+        }
+        .result-card {
+            margin-top: 2rem;
+            display: {% if result %}block{% else %}none{% endif %};
+        }
+        .progress {
+            height: 25px;
+            margin-bottom: 10px;
+        }
+        .progress-bar {
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">Анализатор токсичности текста</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="textInput" class="form-label">Введите текст для анализа:</label>
+                        <textarea class="form-control" id="textInput" name="text" rows="4"
+                                  placeholder="Пример: Это просто ужасно, как можно так поступать...">{{ result.text if result else '' }}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Анализировать</button>
+                </form>
+
+                {% if result %}
+                <div class="result-card card mt-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h4 class="mb-0">Результаты анализа</h4>
+                    </div>
+                    <div class="card-body">
+                        <h5>Текст:</h5>
+                        <p class="lead">{{ result.text }}</p>
+
+                        <h5 class="mt-4">Вероятности классов:</h5>
+                        {% for item in result.class_probs %}
+                        <div class="mb-2">
+                            <label>Класс {{ item.class }}: {{ item.percent }}%</label>
+                            <div class="progress">
+                                <div class="progress-bar bg-{% if item.class == 0 %}success{% else %}danger{% endif %}"
+                                     role="progressbar" style="width: {{ item.percent }}%"
+                                     aria-valuenow="{{ item.percent }}" aria-valuemin="0" aria-valuemax="100">
+                                    {{ item.percent }}%
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <div class="alert alert-{% if not result.is_toxic %}success{% else %}danger{% endif %} mt-3">
+                            <strong>Вывод:</strong> Текст {{ 'не токсичен' if not result.is_toxic else 'токсичен' }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Показываем карточку с результатом после отправки формы
+        document.querySelector('form').addEventListener('submit', function() {
+            if (document.querySelector('.result-card')) {
+                document.querySelector('.result-card').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
